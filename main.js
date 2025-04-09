@@ -4,6 +4,26 @@ const Height = 480;
 const BlockWidth = Width / 10;
 const BlockHeight = BlockWidth / 2;
 
+const Hero = {
+    width: BlockWidth * 3,
+    height: BlockHeight * 1.3,
+    top: Height - Height / 10,
+    left: Width / 2 - BlockWidth * 3 / 2,
+    div: null,
+};
+
+const ball = {
+    size: 10,
+    x: Width/2 - 5/2,
+    y: Height/2,
+    div: null,
+    ballspeed: 5,
+    dx: 0,
+    dy: 3,
+}
+
+//console.log(Hero.width)
+
 const init = () => {
     const container = document.createElement('div')
     document.body.appendChild(container)
@@ -18,7 +38,7 @@ const init = () => {
             container.appendChild(block)
 
             px = BlockWidth * x + BlockWidth / 2
-            py = BlockHeight * y
+            py = BlockHeight * y + 10
 
             block.style.position = 'absolute'
             block.style.top = `${py}px`
@@ -26,9 +46,43 @@ const init = () => {
             block.style.width = `${BlockWidth}px`
             block.style.height = `${BlockHeight}px`
             block.style.backgroundColor = '#f00'
-            block.style.border = 'solid'
+            block.style.border = '2px solid'
+            block.style.boxSizing = 'border-box'
         }
+        Hero.div = document.createElement('div')
+        container.appendChild(Hero.div)
+        ball.div = document.createElement('div')
+        container.appendChild(ball.div)
     }
 }
 
-init()
+const update = () => {
+    Hero.div.style.position = 'absolute'
+    Hero.div.style.top = `${Hero.top}px`
+    Hero.div.style.left = `${Hero.left}px`
+    Hero.div.style.width = `${Hero.width}px`
+    Hero.div.style.height = `${Hero.height}px`
+    Hero.div.style.backgroundColor = '#fff'
+    Hero.div.style.borderRadius = '50% 50% 0 0'
+
+    ball.div.style.position = 'absolute'
+    ball.div.style.top = `${ball.y}px`
+    ball.div.style.left = `${ball.x}px`
+    ball.div.style.width = `${ball.size}px`
+    ball.div.style.height = `${ball.size}px`
+    ball.div.style.backgroundColor = '#fff'
+    ball.div.style.borderRadius = '50%' 
+
+}
+
+window.onload = () => {
+    init()
+    update();
+    const tick = () => {
+        setTimeout(tick, 16);
+        ball.x += ball.dx
+        ball.y += ball.dy
+        update()
+    } 
+    tick();
+}
