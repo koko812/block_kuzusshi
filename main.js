@@ -3,6 +3,7 @@ const Height = 480;
 
 const BlockWidth = Width / 10;
 const BlockHeight = BlockWidth / 2;
+const BlockInfoList = []
 
 const Hero = {
     width: BlockWidth * 2,
@@ -14,7 +15,7 @@ const Hero = {
 
 const ball = {
     size: 10,
-    x: Width /2 - 5,
+    x: Width / 2 - 5,
     y: Height / 2,
     div: null,
     ballspeed: 5,
@@ -48,6 +49,8 @@ const init = () => {
             block.style.backgroundColor = '#f00'
             block.style.border = '2px solid'
             block.style.boxSizing = 'border-box'
+
+            BlockInfoList.push([px, py])
         }
         Hero.div = document.createElement('div')
         container.appendChild(Hero.div)
@@ -71,6 +74,7 @@ const init = () => {
     }
 }
 
+
 const update = () => {
     Hero.div.style.position = 'absolute'
     Hero.div.style.top = `${Hero.top}px`
@@ -90,6 +94,52 @@ const update = () => {
 }
 
 
+const collisionCheck = () => {
+    bx = ball.x + ball.size / 2
+    by = ball.y + ball.size / 2
+
+    if (Hero.left < bx && bx < Hero.left + Hero.width) {
+        if (Hero.top < by && by < Hero.top + Hero.height) {
+            if (ball.dy > 0) {
+                ratio = ((bx - Hero.left) / Hero.width - 0.5) * 2
+                rad = 60 * ratio / 180 * Math.PI
+                ball.dx = Math.sin(rad) * ball.ballspeed
+                ball.dy = Math.cos(rad) * ball.ballspeed * -1
+            }
+        }
+    }
+
+    if (bx < 0 && ball.dx < 0 || bx > Width && ball.dx > 0) {
+        ball.dx *= -1
+    }
+    if (by < 0 && ball.dy < 0 || by > Height && ball.dy > 0) {
+        ball.dy *= -1
+    }
+    
+    for ([px, py] of BlockInfoList) {
+        //console.log('in')
+        
+        if (px < bx && bx < px + BlockWidth) {
+            if (py < by && by < py + BlockHeight) {
+                gl = bx - px
+                gr = bx + BlockWidth -px
+                gt = by - py
+                gb = by + BlockHeight -py
+                g = Math.min(gl,gr,gt,gb)
+                if (g===gl || g ===gr){
+                    ball.dx *= -1
+                }
+                if (g === gt || g === gb){
+                    ball.dy *= -1
+                }
+
+            }
+        }
+    }
+}
+
+
+
 window.onload = () => {
     init()
     update();
@@ -97,6 +147,8 @@ window.onload = () => {
         setTimeout(tick, 16);
         ball.x += ball.dx
         ball.y += ball.dy
+
+        collisionCheck()
         update()
     }
     tick();
