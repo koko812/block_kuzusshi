@@ -5,17 +5,17 @@ const BlockWidth = Width / 10;
 const BlockHeight = BlockWidth / 2;
 
 const Hero = {
-    width: BlockWidth * 3,
-    height: BlockHeight * 1.3,
-    top: Height - Height / 10,
-    left: Width / 2 - BlockWidth * 3 / 2,
+    width: BlockWidth * 2,
+    height: BlockHeight * 1.1,
+    top: Height - Height / 6,
+    left: Width / 2 - BlockWidth * 2 / 2,
     div: null,
 };
 
 const ball = {
     size: 10,
-    x: Width/2 - 5/2,
-    y: Height/2,
+    x: Width /2 - 5,
+    y: Height / 2,
     div: null,
     ballspeed: 5,
     dx: 0,
@@ -53,6 +53,21 @@ const init = () => {
         container.appendChild(Hero.div)
         ball.div = document.createElement('div')
         container.appendChild(ball.div)
+
+        let originalX = 0;
+        let originalHeroLeft = 0;
+        container.onpointerdown = (e) => {
+            e.preventDefault()
+            originalX = e.pageX
+            originalHeroLeft = Hero.left
+        }
+        container.onpointermove = (e) => {
+            e.preventDefault()
+            if (originalX) {
+                Hero.left = originalX + (e.pageX - originalX) * 2
+            }
+        }
+
     }
 }
 
@@ -71,9 +86,9 @@ const update = () => {
     ball.div.style.width = `${ball.size}px`
     ball.div.style.height = `${ball.size}px`
     ball.div.style.backgroundColor = '#fff'
-    ball.div.style.borderRadius = '50%' 
-
+    ball.div.style.borderRadius = '50%'
 }
+
 
 window.onload = () => {
     init()
@@ -83,6 +98,6 @@ window.onload = () => {
         ball.x += ball.dx
         ball.y += ball.dy
         update()
-    } 
+    }
     tick();
 }
