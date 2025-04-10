@@ -1,10 +1,17 @@
+// スクリーンの幅
+// 構造体にした方が見通しがいい，一斉置換で出来るはず
 const Width = 320;
 const Height = 480;
 
+// ブロックの幅と，それぞれのブロックの pos, 壊れてないかのリスト
+// これも構造体にした方が見通しがいい
 const BlockWidth = Width / 10;
 const BlockHeight = BlockWidth / 2;
 const BlockInfoList = []
-
+let BlockCount = 0
+// 構造体っぽくした
+// 最初は即時クロージャで実装していたが，getter の実装がめんどくさく断念
+// 構造体の中身から，中身の要素を参照できないので，マジックナンバーが増えた
 const Hero = {
     width: BlockWidth * 2,
     height: BlockHeight * 1.1,
@@ -23,8 +30,8 @@ const ball = {
     dy: 3,
 }
 
-//console.log(Hero.width)
-
+let gameover = false
+// html 要素とマウス操作のリスナーの準備
 const init = () => {
     const container = document.createElement('div')
     document.body.appendChild(container)
@@ -33,10 +40,12 @@ const init = () => {
     container.style.height = `${Height}px`
     container.style.backgroundColor = '#000'
 
-    for (let y = 0; y < 10; y++) {
+    for (let y = 0; y < 7; y++) {
         for (let x = 0; x < 9; x++) {
+            // ここ，blockdiv とかにした方がきっとわかりやすい
             const block = document.createElement('div')
             container.appendChild(block)
+            BlockCount++;
 
             px = BlockWidth * x + BlockWidth / 2
             py = BlockHeight * y + 10
@@ -50,8 +59,9 @@ const init = () => {
             block.style.border = '2px solid'
             block.style.boxSizing = 'border-box'
 
-            BlockInfoList.push([px, py])
+            BlockInfoList.push({ px: px, py: py, available: true, element: block })
         }
+
         Hero.div = document.createElement('div')
         container.appendChild(Hero.div)
         ball.div = document.createElement('div')
@@ -72,10 +82,26 @@ const init = () => {
         }
 
     }
+    messegeDiv = document.createElement('div')
+    container.appendChild(messegeDiv)
+    messegeDiv.style.position = 'absolute'
+    messegeDiv.style.top = '0px'
+    messegeDiv.style.left = '0px'
+    messegeDiv.style.right = '0px'
+    messegeDiv.style.bottom = '0px'
+    messegeDiv.style.display = 'flex'
+    messegeDiv.style.alignItems = 'center'
+    messegeDiv.style.justifyContent = 'center'
+    messegeDiv.style.color = '#fff'
+    messegeDiv.style.fontSize = '100px'
+    messegeDiv.style.fontFamily = 'sans-serif'
 }
 
-
+// 動く可能性がある要素の css をフレームごとに書き換える
 const update = () => {
+    if (gameover) {
+        return
+    }
     Hero.div.style.position = 'absolute'
     Hero.div.style.top = `${Hero.top}px`
     Hero.div.style.left = `${Hero.left}px`
@@ -95,9 +121,14 @@ const update = () => {
 
 
 const collisionCheck = () => {
+    // 弾を点として扱っているので，ブロックの隙間に挟まりがち
+    // 弾の半径を考え出すと，衝突判定の際に半径の±が挟まると思うけど，
+    // そいつらを一括してうまく扱える美しいアルゴリズムはないんだろうか
     bx = ball.x + ball.size / 2
     by = ball.y + ball.size / 2
 
+    // プレイヤーと弾の当たり判定
+    // 当たる場所によって跳ね返る方向を変えられるような実装にしている
     if (Hero.left < bx && bx < Hero.left + Hero.width) {
         if (Hero.top < by && by < Hero.top + Hero.height) {
             if (ball.dy > 0) {
@@ -109,32 +140,51 @@ const collisionCheck = () => {
         }
     }
 
+    // 壁と弾の当たり判定
     if (bx < 0 && ball.dx < 0 || bx > Width && ball.dx > 0) {
         ball.dx *= -1
     }
-    if (by < 0 && ball.dy < 0 || by > Height && ball.dy > 0) {
+    if (by < 0 && ball.dy < 0) {
         ball.dy *= -1
     }
-    
-    for ([px, py] of BlockInfoList) {
+
+
+    // ブロックと弾の当たり判定
+    // まずいずれかのブロックに当たったかどうかを判定
+    // もし当たっていたなら，そのブロックの横縦どちらに当たったかを判定
+    for (blockInfo of BlockInfoList) {
         //console.log('in')
-        
+        const { px, py, available, element } = blockInfo
+        if (!available) continue
         if (px < bx && bx < px + BlockWidth) {
             if (py < by && by < py + BlockHeight) {
+                BlockCount--;
                 gl = bx - px
-                gr = bx + BlockWidth -px
+                gr = bx + BlockWidth - px
                 gt = by - py
-                gb = by + BlockHeight -py
-                g = Math.min(gl,gr,gt,gb)
-                if (g===gl || g ===gr){
+                gb = by + BlockHeight - py
+                g = Math.min(gl, gr, gt, gb)
+                if (g === gl || g === gr) {
                     ball.dx *= -1
                 }
-                if (g === gt || g === gb){
+                if (g === gt || g === gb) {
                     ball.dy *= -1
                 }
-
+                blockInfo.available = false
+                element.style.display = 'none'
             }
         }
+    }
+
+    if (by > Height) {
+        gameover = true
+        messegeDiv.textContent = 'You Lose'
+        messegeDiv.style.color = '#800'
+    }
+    if (BlockCount == 0) {
+        gameover = true
+        messegeDiv.textContent = 'You Win !'
+        messegeDiv.style.color = '#080'
     }
 }
 
@@ -150,6 +200,11 @@ window.onload = () => {
 
         collisionCheck()
         update()
+        if (gameover) {
+            return
+        }
+        console.log(gameover)
+
     }
     tick();
 }
