@@ -1,3 +1,6 @@
+// TODO 効果音，ブロックの配色
+// should DO 耐久力のあるブロック，ステージ構成
+
 // スクリーンの幅
 // 構造体にした方が見通しがいい，一斉置換で出来るはず
 const Width = 320;
@@ -9,9 +12,11 @@ const BlockWidth = Width / 10;
 const BlockHeight = BlockWidth / 2;
 const BlockInfoList = []
 let BlockCount = 0
+
 // 構造体っぽくした
 // 最初は即時クロージャで実装していたが，getter の実装がめんどくさく断念
 // 構造体の中身から，中身の要素を参照できないので，マジックナンバーが増えた
+// (本来は，height = Hero.width/2 の方にしたかったということ)
 const Hero = {
     width: BlockWidth * 2,
     height: BlockHeight * 1.1,
@@ -55,8 +60,8 @@ const init = () => {
             block.style.left = `${px}px`
             block.style.width = `${BlockWidth}px`
             block.style.height = `${BlockHeight}px`
-            block.style.backgroundColor = '#f00'
-            block.style.border = '2px solid'
+            block.style.backgroundColor = `hsl(${360/(( x+y )%4+1)}deg 100% 50% )`
+            block.style.border = `3px ridge hsl(${360/(( x+y )%4+1)}deg 100% 30% )`
             block.style.boxSizing = 'border-box'
 
             BlockInfoList.push({ px: px, py: py, available: true, element: block })
@@ -82,6 +87,7 @@ const init = () => {
         }
 
     }
+    // テキスト表示関連の設定がよくわかってなかったが，ちょっと覚えられた
     messegeDiv = document.createElement('div')
     container.appendChild(messegeDiv)
     messegeDiv.style.position = 'absolute'
@@ -108,6 +114,7 @@ const update = () => {
     Hero.div.style.width = `${Hero.width}px`
     Hero.div.style.height = `${Hero.height}px`
     Hero.div.style.backgroundColor = '#fff'
+    Hero.div.style.border = 'ridge 3px'
     Hero.div.style.borderRadius = '50% 50% 0 0'
 
     ball.div.style.position = 'absolute'
@@ -189,7 +196,8 @@ const collisionCheck = () => {
 }
 
 
-
+// gameover の処理を最初どこに入れればいいかわからなかった　
+// シーン遷移みたいなのをもっと上手に扱えるようになりたい
 window.onload = () => {
     init()
     update();
