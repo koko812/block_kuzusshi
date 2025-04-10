@@ -1,5 +1,15 @@
 // TODO 効果音，ブロックの配色
 // should DO 耐久力のあるブロック，ステージ構成
+const bgm = document.createElement("audio");
+const hero_snd = document.createElement("audio");
+const block_snd = document.createElement("audio");
+const gameover_snd = document.createElement("audio");
+const clear_snd = document.createElement("audio");
+block_snd.src = 'static/8bitダメージ7.mp3'
+hero_snd.src = 'static/8bit選択1.mp3'
+gameover_snd.src = 'static/8bit失敗3.mp3'
+clear_snd.src = 'static/8bit勝利1.mp3'
+bgm.src = 'static/Short60_テクノ_01.mp3'
 
 // スクリーンの幅
 // 構造体にした方が見通しがいい，一斉置換で出来るはず
@@ -60,8 +70,8 @@ const init = () => {
             block.style.left = `${px}px`
             block.style.width = `${BlockWidth}px`
             block.style.height = `${BlockHeight}px`
-            block.style.backgroundColor = `hsl(${360/(( x+y )%4+1)}deg 100% 50% )`
-            block.style.border = `3px ridge hsl(${360/(( x+y )%4+1)}deg 100% 30% )`
+            block.style.backgroundColor = `hsl(${360 / ((x + y) % 4 + 1)}deg 100% 50% )`
+            block.style.border = `3px ridge hsl(${360 / ((x + y) % 4 + 1)}deg 100% 30% )`
             block.style.boxSizing = 'border-box'
 
             BlockInfoList.push({ px: px, py: py, available: true, element: block })
@@ -78,6 +88,8 @@ const init = () => {
             e.preventDefault()
             originalX = e.pageX
             originalHeroLeft = Hero.left
+            // bgm の繰り返しに対応出来ていない
+            bgm.play()
         }
         container.onpointermove = (e) => {
             e.preventDefault()
@@ -143,6 +155,8 @@ const collisionCheck = () => {
                 rad = 60 * ratio / 180 * Math.PI
                 ball.dx = Math.sin(rad) * ball.ballspeed
                 ball.dy = Math.cos(rad) * ball.ballspeed * -1
+                // ネストを間違えたので直した
+                hero_snd.play()
             }
         }
     }
@@ -179,6 +193,8 @@ const collisionCheck = () => {
                 }
                 blockInfo.available = false
                 element.style.display = 'none'
+                // 音のオーバーラップに対応出来ていない
+                block_snd.play()
             }
         }
     }
@@ -198,6 +214,7 @@ const collisionCheck = () => {
 
 // gameover の処理を最初どこに入れればいいかわからなかった　
 // シーン遷移みたいなのをもっと上手に扱えるようになりたい
+snd_flag = false
 window.onload = () => {
     init()
     update();
@@ -205,13 +222,21 @@ window.onload = () => {
         setTimeout(tick, 16);
         ball.x += ball.dx
         ball.y += ball.dy
-
+        console.log(BlockCount)
+        
         collisionCheck()
         update()
-        if (gameover) {
-            return
+
+        if(gameover){
+            bgm.pause()
+            if (snd_flag) return 
+            if(BlockCount==0){
+                clear_snd.play()
+            }else{
+                gameover_snd.play()
+            }
+            snd_flag = true
         }
-        console.log(gameover)
 
     }
     tick();
