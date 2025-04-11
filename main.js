@@ -139,8 +139,7 @@ const update = () => {
 }
 
 
-const collisionCheck = () => {
-    // 弾を点として扱っているので，ブロックの隙間に挟まりがち
+const collisionCheck = () => { // 弾を点として扱っているので，ブロックの隙間に挟まりがち
     // 弾の半径を考え出すと，衝突判定の際に半径の±が挟まると思うけど，
     // そいつらを一括してうまく扱える美しいアルゴリズムはないんだろうか
     bx = ball.x + ball.size / 2
@@ -156,6 +155,7 @@ const collisionCheck = () => {
                 ball.dx = Math.sin(rad) * ball.ballspeed
                 ball.dy = Math.cos(rad) * ball.ballspeed * -1
                 // ネストを間違えたので直した
+                hero_snd.currentTime = 0
                 hero_snd.play()
             }
         }
@@ -194,6 +194,7 @@ const collisionCheck = () => {
                 blockInfo.available = false
                 element.style.display = 'none'
                 // 音のオーバーラップに対応出来ていない
+                block_snd.currentTime = 0
                 block_snd.play()
             }
         }
